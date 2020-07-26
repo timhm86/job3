@@ -64,7 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function getZero(num) {
         if (num >=0 && num <10) {
-            return `0 ${num}`;
+            return `0${num}`;
         }
         else {
         return num;
@@ -212,28 +212,39 @@ window.addEventListener('DOMContentLoaded', () => {
     //     }
     //     );
 
-// 2 вариант построения карточек
-    getResource('http://localhost:3000/menu')
-        .then( data => createCard(data));
-           
-    function createCard(data) {
-        data.forEach(({imgSrc, altImg, menuItemSubtitle, menuItemDescr,  menuItemPrice}) => {
-            const card = document.createElement('div');
-            card.classList.add('menu__item');
+// 2 вариант построения карточек через axios
 
-            card.innerHTML = `                
-            <img src="img/tabs/${imgSrc}" alt="${altImg}">
-            <h3 class="menu__item-subtitle">${menuItemSubtitle}</h3>
-            <div class="menu__item-descr">${menuItemDescr}</div>
-            <div class="menu__item-divider"></div>
-            <div class="menu__item-price">
-                <div class="menu__item-cost">Цена:</div>
-                <div class="menu__item-total"><span>${menuItemPrice}</span> грн/день</div>
-            </div>`;
-
-            document.querySelector('.menu__field .container').append(card);
+    axios.get('http://localhost:3000/menu')
+        .then( data => {
+            data.data.forEach(({imgSrc, altImg, menuItemSubtitle, menuItemDescr,  menuItemPrice}) => { // деструктаризация объекта на его свойства
+                new MenuItem(imgSrc, altImg, menuItemSubtitle, menuItemDescr,  menuItemPrice, '.menu__field .container ').createMenu();
+            });
         });
-    }
+
+
+
+// 3 вариант построения карточек через динамическое создание элементов
+    // getResource('http://localhost:3000/menu')
+    //     .then( data => createCard(data));
+           
+    // function createCard(data) {
+    //     data.forEach(({imgSrc, altImg, menuItemSubtitle, menuItemDescr,  menuItemPrice}) => {
+    //         const card = document.createElement('div');
+    //         card.classList.add('menu__item');
+
+    //         card.innerHTML = `                
+    //         <img src="img/tabs/${imgSrc}" alt="${altImg}">
+    //         <h3 class="menu__item-subtitle">${menuItemSubtitle}</h3>
+    //         <div class="menu__item-descr">${menuItemDescr}</div>
+    //         <div class="menu__item-divider"></div>
+    //         <div class="menu__item-price">
+    //             <div class="menu__item-cost">Цена:</div>
+    //             <div class="menu__item-total"><span>${menuItemPrice}</span> грн/день</div>
+    //         </div>`;
+
+    //         document.querySelector('.menu__field .container').append(card);
+    //     });
+    // }
 
     // new MenuItem (
     //     'vegy.jpg', 
@@ -389,6 +400,185 @@ window.addEventListener('DOMContentLoaded', () => {
     fetch('http://localhost:3000/menu')
     .then(data => data.json())
     .then(res => console.log(res));
+
+
+    //Слайды
+
+// мой вариант
+    // const arrSlides = [
+    //     '<img src="img/slider/pepper.jpg" alt="pepper">',
+    //     '<img src="img/slider/food-12.jpg" alt="food">',
+    //     '<img src="img/slider/olive-oil.jpg" alt="oil">',
+    //     '<img src="img/slider/paprika.jpg" alt="paprika">',
+    // ];
+
+    // const nextSlider = document.querySelector('.offer__slider-next'),
+    //       previosSlider = document.querySelector('.offer__slider-prev'),
+    //       currentSlide = document.querySelector('#current'),
+    //       slide = document.querySelector('.offer__slide');
+    //       console.log(currentSlide);
+
+    // function nextSlides (item, i) {
+    //     slide.innerHTML = '';
+    //     currentSlide.textContent = '';
+    //     const num = getZero(i+1);
+    //     currentSlide.textContent= `${num}`;
+    //     slide.innerHTML = `${item}`;
+    // }
+    // nextSlides(arrSlides[0],0);
+    // let index = 0;
+    // nextSlider.addEventListener('click', () => {
+    //     index++;
+    //     if (index === 4) {
+    //         index = 0;
+    //     }
+    //     nextSlides(arrSlides[index], index);
+    // });
+
+    // previosSlider.addEventListener('click', () => {
+    //     index--;
+    //     if (index === -1) {
+    //         index = 3;
+    //     }
+    //     nextSlides(arrSlides[index],index);
+    // });
+
+    const slides = document.querySelectorAll('.offer__slide'),
+          next = document.querySelector('.offer__slider-next'),
+          prev = document.querySelector('.offer__slider-prev'),
+          current = document.querySelector('#current'),
+          total = document.querySelector('#total'),
+          slidesWrapper = document.querySelector('.offer__slider-wrapper'),
+          slidesField = document.querySelector('.offer__slider-inner'),
+          width = window.getComputedStyle(slidesWrapper).width;
+
+
+    let slideIndex = 1,
+        offset = 0;
+
+// анимировааный слайдер
+
+    slidesField.style.width = 100 * slides.length + '%';
+    slidesField.style.display = 'flex';
+    slidesField.style.transition = '0.5s all';
+
+    slidesWrapper.style.overflow = 'hidden';
+
+    if (slides.length < 10 ) {
+        total.textContent = getZero(slides.length);
+        current.textContent = getZero(slideIndex);
+    } else {
+        total.textContent = slides.length;
+        current.textContent = slideIndex;
+    }
+
+    slides.forEach(slide => {
+        slide.style.width = width;
+    });
+
+
+    next.addEventListener('click', () => {
+        if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)){
+            offset = 0;
+        } else {
+            offset += +width.slice(0, width.length - 2);
+        }
+
+        slidesField.style.transform = `translateX(-${offset}px)`;
+
+        if (slideIndex == slides.length) {
+            slideIndex = 1;
+        } else {
+            slideIndex++; 
+        }
+
+        if (slides.length < 10 ) {
+            current.textContent = getZero(slideIndex);
+        } else {
+            current.textContent = slideIndex;
+        }
+    });
+
+
+    prev.addEventListener('click', () => {
+        if (offset == 0){
+            offset = +width.slice(0, width.length - 2) * (slides.length - 1);
+        } else {
+            offset -= +width.slice(0, width.length - 2);
+        }
+
+        slidesField.style.transform = `translateX(-${offset}px)`;
+
+        if (slideIndex == 1) {
+            slideIndex = slides.length;
+        } else {
+            slideIndex--; 
+        }
+
+        if (slides.length < 10 ) {
+            current.textContent = getZero(slideIndex);
+        } else {
+            current.textContent = slideIndex;
+        }
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+// вариант без анимированного слайдера
+
+    // showSlides(slideIndex);
+
+    // if (slides.length < 10 ) {
+    //     total.textContent = getZero(slides.length);
+    // } else {
+    //     total.textContent = slides.length;
+    // }
+
+    // function showSlides (n) {
+    //     if (n > slides.length ) {
+    //         slideIndex = 1;
+    //     }
+
+    //     if (n < 1) {
+    //         slideIndex = slides.length;
+    //     }
+
+    //     slides.forEach(item => item.style.display = 'none')
+
+    //     slides[slideIndex - 1].style.display = 'block';
+
+    //     current.textContent = getZero(slideIndex);
+    // }
+
+    // function plusSides (n) {
+    //     showSlides(slideIndex += n);
+    // }
+
+    // next.addEventListener('click', () => {
+    //     plusSides(1);
+    // });
+
+    // prev.addEventListener('click', () => {
+    //     plusSides(-1);
+    // });
+
+
+
+
+
+
+
+
+
 
 
 
