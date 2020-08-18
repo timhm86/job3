@@ -392,7 +392,7 @@ window.addEventListener('DOMContentLoaded', () => {
             prevModalDialog.classList.add('show');
             prevModalDialog.classList.remove('hide');
             closeModal();
-        }, 4000)
+        }, 4000);
 
     }
 
@@ -456,6 +456,11 @@ window.addEventListener('DOMContentLoaded', () => {
     let slideIndex = 1,
         offset = 0;
 
+    function deleteNotDigits (str) {
+        return +str.replace(/\D/g, '');
+    }
+    
+
 // анимировааный слайдер
 
     slidesField.style.width = 100 * slides.length + '%';
@@ -478,10 +483,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     next.addEventListener('click', () => {
-        if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)){
+        if (offset == deleteNotDigits(width) * (slides.length - 1)){
             offset = 0;
         } else {
-            offset += +width.slice(0, width.length - 2);
+            offset += deleteNotDigits(width);
         }
 
         slidesField.style.transform = `translateX(-${offset}px)`;
@@ -492,19 +497,17 @@ window.addEventListener('DOMContentLoaded', () => {
             slideIndex++; 
         }
 
-        if (slides.length < 10 ) {
-            current.textContent = getZero(slideIndex);
-        } else {
-            current.textContent = slideIndex;
-        }
+        getZeroSlides ();
+
+        activeDot ();
     });
 
 
     prev.addEventListener('click', () => {
         if (offset == 0){
-            offset = +width.slice(0, width.length - 2) * (slides.length - 1);
+            offset = deleteNotDigits(width) * (slides.length - 1);
         } else {
-            offset -= +width.slice(0, width.length - 2);
+            offset -= deleteNotDigits(width);
         }
 
         slidesField.style.transform = `translateX(-${offset}px)`;
@@ -514,16 +517,20 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             slideIndex--; 
         }
+        getZeroSlides ()
 
+
+        activeDot ();
+    });
+
+
+    function getZeroSlides () {
         if (slides.length < 10 ) {
             current.textContent = getZero(slideIndex);
         } else {
             current.textContent = slideIndex;
         }
-    });
-
-
-
+    }
 
 
 
@@ -571,17 +578,88 @@ window.addEventListener('DOMContentLoaded', () => {
     //     plusSides(-1);
     // });
 
+// точки в слайдере
+
+    const offerSlider = document.querySelector('.offer__slider'),
+          carouselIndicators =  document.createElement('ol'),
+          dot = [];          
+
+    offerSlider.style.position = 'relative';
+
+    carouselIndicators.classList.add('carousel-indicators');
+    carouselIndicators.style.cssText = `
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 15;
+        display: flex;
+        justify-content: center;
+        margin-right: 15%;
+        margin-left: 15%;
+        list-style: none;
+    `;
+
+    offerSlider.append(carouselIndicators);
+
+    for (let i = 0; i < slides.length; i++) {
+        dot[i] = document.createElement('li');
+        dot[i].classList.add('dot');
+        dot[i].style.cssText = `
+            box-sizing: content-box;
+            flex: 0 1 auto;
+            width: 30px;
+            height: 6px;
+            margin-right: 3px;
+            margin-left: 3px;
+            cursor: pointer;
+            background-color: #fff;
+            background-clip: padding-box;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            opacity: .5;
+            transition: opacity .6s ease;
+        `;
+        carouselIndicators.append(dot[i]);
+
+
+    }
+
+    function activeDot () {
+        for (let i = 0; i < slides.length; i++) {
+            dot[i].style.opacity = '0.5';
+        }
+        dot[slideIndex - 1].style.opacity = '1';
+    }
+
+    activeDot ();
+
+    const dots = document.querySelectorAll('.dot');
+
+
+    dots.forEach( (event, index) => {
+
+        event.addEventListener('click', () => {
+            offset = deleteNotDigits(width);
+            
+
+            slideIndex = index +1;
+
+            getZeroSlides ();
+            
+            offset *= index;
+
+            slidesField.style.transform = `translateX(-${offset}px)`;
+
+            activeDot ();
+    });
+    });
 
 
 
 
 
-
-
-
-
-
-
+    
 });
 
 
