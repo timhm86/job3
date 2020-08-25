@@ -51,7 +51,7 @@ console.log(Ivan.surname);
 
 Ivan.say();
 
-console.log( Ivan.surname);
+console.log( Ivan.surnameGet);
 
 Ivan.surnameGet = 'sasasa';
 
